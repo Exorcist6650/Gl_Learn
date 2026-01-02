@@ -5,12 +5,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
-std::string getProjectPath(){
-	std::string path = __FILE__;
-	path = path.substr(0, path.find_last_of("\\/")); // GL_learn/src
-	return path.substr(0, path.find_last_of("\\/")); 
-}
+GLuint SCR_HEIGHT = 640;
+GLuint SCR_WIDTH = 480;
 
 GLfloat vertex[]
 {
@@ -36,7 +34,7 @@ int main(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	/* Create a windowed mode window and its OpenGL context */
-	ptrWindow = glfwCreateWindow(640, 480, "Triangle", NULL, NULL);
+	ptrWindow = glfwCreateWindow(SCR_HEIGHT, SCR_WIDTH, "Triangle", NULL, NULL);
 	if (!ptrWindow)
 	{
 		glfwTerminate();
@@ -51,6 +49,7 @@ int main(void)
 	// Device info
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 	std::cout  << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+	std::cout << std::filesystem::current_path().string() << std::endl;
 
 
 	// Vertex array
@@ -82,10 +81,8 @@ int main(void)
 	try
 	{
 		// Open files
-		vShaderFile.open(getProjectPath() + "/res/shaders/shader.vert");
-		fShaderFile.open(getProjectPath() + "/res/shaders/shader.frag");
-		if (!vShaderFile.is_open()) std::cout << "ERROR::SHADER::VERTEX::FILE_NOT_OPEN" << std::endl;
-		if (!fShaderFile.is_open()) std::cout << "ERROR::SHADER::FRAGMENT::FILE_NOT_OPEN" << std::endl;
+		vShaderFile.open("res/shaders/shader.vert");
+		fShaderFile.open("res/shaders/shader.frag");
 
 		std::stringstream vShaderStream, fShaderStream; // String stream
 
@@ -161,6 +158,16 @@ int main(void)
 
 		glBindVertexArray(VAO);
 		glUseProgram(shaderProgram);
+
+		// Location configuration by screen ratio
+		int uni_loc = glGetUniformLocation(shaderProgram, "scr_aspect");
+		glUniform1f(uni_loc, (float)SCR_HEIGHT / SCR_WIDTH);
+
+		// Theta cos and sin for rotation matrix
+		int uni_cos = glGetUniformLocation(shaderProgram, "cosTheta");
+		glUniform1f(uni_cos, (float)cos(glfwGetTime()));
+		int uni_sin = glGetUniformLocation(shaderProgram, "sinTheta");
+		glUniform1f(uni_sin, (float)sin(glfwGetTime()));
 
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
