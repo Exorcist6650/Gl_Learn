@@ -6,17 +6,30 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-
-GLuint SCR_HEIGHT = 640;
-GLuint SCR_WIDTH = 480;
+#include <algorithm>
 
 GLfloat vertex[]
 {
 	// positions        // colors
-	0.0f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f, // top
-	-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-	0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f  // bottom right
+	-0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f, // left up angle
+	0.5f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f, // right up angle
+	-0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f,  // left down angle
+	0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, // right down angle
 };
+
+GLuint SCR_WIDTH = 640;
+GLuint SCR_HEIGHT = 480;
+GLfloat SCR_ASPECT = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+
+
+void glfwWindowSizeCallback(GLFWwindow* ptrWindow, GLint width, GLint height) {
+	SCR_WIDTH = width;
+	SCR_HEIGHT = height;
+	SCR_ASPECT = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
+}
 
 int main(void)
 {
@@ -34,12 +47,14 @@ int main(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	/* Create a windowed mode window and its OpenGL context */
-	ptrWindow = glfwCreateWindow(SCR_HEIGHT, SCR_WIDTH, "Triangle", NULL, NULL);
+	ptrWindow = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Square", NULL, NULL);
 	if (!ptrWindow)
 	{
 		glfwTerminate();
 		return -1;
 	}
+
+	glfwSetWindowSizeCallback(ptrWindow, glfwWindowSizeCallback);
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(ptrWindow);
@@ -50,7 +65,7 @@ int main(void)
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 	std::cout  << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 	std::cout << std::filesystem::current_path().string() << std::endl;
-
+	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
 
 	// Vertex array
 	GLuint VAO;
@@ -160,16 +175,10 @@ int main(void)
 		glUseProgram(shaderProgram);
 
 		// Location configuration by screen ratio
-		int uni_loc = glGetUniformLocation(shaderProgram, "scr_aspect");
-		glUniform1f(uni_loc, (float)SCR_HEIGHT / SCR_WIDTH);
+		int uni_aspect = glGetUniformLocation(shaderProgram, "scrAspect");
+		glUniform1f(uni_aspect, (float)SCR_ASPECT);
 
-		// Theta cos and sin for rotation matrix
-		int uni_cos = glGetUniformLocation(shaderProgram, "cosTheta");
-		glUniform1f(uni_cos, (float)cos(glfwGetTime()));
-		int uni_sin = glGetUniformLocation(shaderProgram, "sinTheta");
-		glUniform1f(uni_sin, (float)sin(glfwGetTime()));
-
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 		glfwPollEvents(); // Events checking
