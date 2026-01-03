@@ -8,29 +8,36 @@
 #include <filesystem>
 #include <algorithm>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "resources/stb_image.h"
+
 GLfloat vertex[]
 {
-	// positions        // colors
-	-0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f, // left up angle
-	0.5f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f, // right up angle
-	-0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f,  // left down angle
-	0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, // right down angle
+	// positions        // colors			// texture positions
+	-0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
+	0.5f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
+	-0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
+	0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f// right bottom angle
 };
 
-GLuint SCR_WIDTH = 640;
-GLuint SCR_HEIGHT = 480;
-GLfloat SCR_ASPECT = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+GLuint SCR_WIDTH = 800;
+GLuint SCR_HEIGHT = 640;
+GLfloat SCR_ASPECT = (float)SCR_HEIGHT / (float)SCR_WIDTH;
 
 
 void glfwWindowSizeCallback(GLFWwindow* ptrWindow, GLint width, GLint height) {
 	SCR_WIDTH = width;
 	SCR_HEIGHT = height;
-	SCR_ASPECT = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+	SCR_ASPECT = (float)SCR_HEIGHT / (float)SCR_WIDTH;
 
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
 }
 
+void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int action, int mode)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(ptrWindow, GLFW_TRUE);
+}
 int main(void)
 {
 	GLFWwindow* ptrWindow;
@@ -55,6 +62,7 @@ int main(void)
 	}
 
 	glfwSetWindowSizeCallback(ptrWindow, glfwWindowSizeCallback);
+	glfwSetKeyCallback(ptrWindow, glfwWindowKeyCallback);
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(ptrWindow);
@@ -78,11 +86,14 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
 	// Position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
 	// Color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
+	// Texture position
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
 
 
 	// Shaders read
@@ -96,7 +107,7 @@ int main(void)
 	try
 	{
 		// Open files
-		vShaderFile.open("res/shaders/shader.vert");
+		vShaderFile.open("res/shaders/rotate_shader.vert");
 		fShaderFile.open("res/shaders/shader.frag");
 
 		std::stringstream vShaderStream, fShaderStream; // String stream
@@ -164,24 +175,47 @@ int main(void)
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
+	// Texture
+	GLint txr_width, txr_height, nrChannels;
+	unsigned char* ptrData = stbi_load("res/textures/osagePlush.png", &txr_width, &txr_height, &nrChannels, 0);
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	if (ptrData)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txr_width, txr_height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptrData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+	}
+	else std::cout << "FAILED::TEXTURE::LOAD" << std::endl;
+	stbi_image_free(ptrData);
+
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(ptrWindow))
 	{
-		/* Render here */
-		glClearColor(1.0f, 1.0f, 1.0f, -1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glfwPollEvents(); // Events checking
 
+		// Render here
+		//glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
+		glClearColor(1, 1, 1, -1);
+
+		glClear(GL_COLOR_BUFFER_BIT);
+	
 		glBindVertexArray(VAO);
 		glUseProgram(shaderProgram);
 
 		// Location configuration by screen ratio
-		int uni_aspect = glGetUniformLocation(shaderProgram, "scrAspect");
-		glUniform1f(uni_aspect, (float)SCR_ASPECT);
+		GLint uni_aspectLoc = glGetUniformLocation(shaderProgram, "scrAspect");
+		glUniform1f(uni_aspectLoc, (float)SCR_ASPECT);
+		// Cos theta for moving_shaders
+		int uni_cos = glGetUniformLocation(shaderProgram, "cosTheta");
+		glUniform1f(uni_cos, (float)cos(glfwGetTime() * 0.5));
+		int uni_sin = glGetUniformLocation(shaderProgram, "sinTheta");
+		glUniform1f(uni_sin, (float)cos(glfwGetTime() * 2));
 
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
-		glfwPollEvents(); // Events checking
 	}
 
 	glfwTerminate();
