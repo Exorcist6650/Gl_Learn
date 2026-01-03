@@ -13,11 +13,31 @@
 
 GLfloat vertex[]
 {
-	// positions        // colors			// texture positions
-	-0.5f, 0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
-	0.5f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
-	-0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
-	0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f// right bottom angle
+	// positions			// colors			// texture positions
+
+	// Left top square
+	-0.625f, 0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
+	-0.625f, 0.375f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
+	-0.375f, 0.625f, 0.0f,   0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
+	-0.375f, 0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
+
+	// Right top square
+	0.375f, 0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
+	0.375f, 0.375f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
+	0.625f, 0.625f, 0.0f,   0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
+	0.625f, 0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
+
+	// Right bottom square
+	0.375f, -0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
+	0.375f, -0.625f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
+	0.625f, -0.375f, 0.0f,  0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
+	0.625f, -0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
+
+	// Left bottom square
+	-0.625f, -0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
+	-0.625f, -0.625f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
+	-0.375f, -0.375f, 0.0f, 0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
+	-0.375f, -0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
 };
 
 GLuint SCR_WIDTH = 800;
@@ -38,6 +58,7 @@ void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int act
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(ptrWindow, GLFW_TRUE);
 }
+
 int main(void)
 {
 	GLFWwindow* ptrWindow;
@@ -196,8 +217,8 @@ int main(void)
 		glfwPollEvents(); // Events checking
 
 		// Render here
-		//glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
-		glClearColor(1, 1, 1, -1);
+		glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
+		//glClearColor(1, 1, 1, -1);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 	
@@ -209,15 +230,21 @@ int main(void)
 		glUniform1f(uni_aspectLoc, (float)SCR_ASPECT);
 		// Cos theta for moving_shaders
 		int uni_cos = glGetUniformLocation(shaderProgram, "cosTheta");
-		glUniform1f(uni_cos, (float)cos(glfwGetTime() * 0.5));
+		glUniform1f(uni_cos, (float)cos(glfwGetTime()));
 		int uni_sin = glGetUniformLocation(shaderProgram, "sinTheta");
-		glUniform1f(uni_sin, (float)cos(glfwGetTime() * 2));
+		glUniform1f(uni_sin, (float)sin(glfwGetTime()));
 
+		// Drawing elements
+		//glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
 
 		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 	}
 
+	glDeleteBuffers(1, &VAO);
 	glfwTerminate();
 	return 0;
 }
