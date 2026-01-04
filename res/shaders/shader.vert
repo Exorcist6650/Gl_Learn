@@ -11,7 +11,7 @@ uniform float scrAspect;
 
 void main()
 {
-	gl_Position = vec4(VertexPos.x * scrAspect, VertexPos.y, VertexPos.z, 1.0f);
+	gl_Position = vec4(VertexPos.x, VertexPos.y, VertexPos.z, 1.0f);
 	Color = VertexColor;
 	TexturePosition = VertexTexturePos;
 } 

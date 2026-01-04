@@ -19,7 +19,7 @@ void main()
 	);
 	vec2 rotatedPos = rotation * VertexPos.xy;
 
-	gl_Position = vec4(rotatedPos.x * scrAspect, rotatedPos.y, VertexPos.z, 1.0);
+	gl_Position = vec4(rotatedPos.x, rotatedPos.y, VertexPos.z, 1.0);
 	Color = VertexColor;
 	TexturePosition = VertexTexturePos;
 } 

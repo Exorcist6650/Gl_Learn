@@ -40,6 +40,7 @@ GLfloat vertex[]
 	-0.375f, -0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
 };
 
+
 GLuint SCR_WIDTH = 800;
 GLuint SCR_HEIGHT = 640;
 GLfloat SCR_ASPECT = (float)SCR_HEIGHT / (float)SCR_WIDTH;
@@ -61,6 +62,59 @@ void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int act
 
 int main(void)
 {
+	const int pointSize = 21 * 21 * 6;
+	const int linesSize = 84 * 6;
+	GLfloat positions[pointSize + linesSize];
+
+	int index = 0;
+
+	for (int x = -100; x <= 100; x += 10)
+	{
+		for (int y = -100; y <= 100; y += 10)
+		{
+
+			// Cordination X Y Z
+			positions[index++] = x * 0.01f;
+			positions[index++] = y * 0.01f;
+			positions[index++] = 0.0f; // Z position
+			// Color R G B
+			positions[index++] = 0.0f;
+			positions[index++] = 0.0f;
+			positions[index++] = 1.0f;
+		}
+
+	}
+	for (int ordinate = -100; ordinate <= 100; ordinate += 10)
+	{
+		for (int len = -1; len <= 1; len += 2)
+		{
+			// Cordination X Y Z
+			positions[index++] = len; // X position
+			positions[index++] = ordinate * 0.01f;
+			positions[index++] = 0.0f; // Z position
+			// Color R G B
+			positions[index++] = 0.0f;
+			positions[index++] = 0.0f;
+			positions[index++] = 1.0f;
+
+		}
+	}
+	for (int abscissa = -100; abscissa <= 100; abscissa += 10)
+	{
+		for (int len1 = -1; len1 <= 1; len1 += 2)
+		{
+			// Cordination X Y Z
+			positions[index++] = abscissa * 0.01f; // X position
+			positions[index++] = len1;
+			positions[index++] = 0.0f; // Z position
+			// Color R G B
+			positions[index++] = 0.0f;
+			positions[index++] = 0.0f;
+			positions[index++] = 1.0f;
+
+		}
+	}
+
 	GLFWwindow* ptrWindow;
 
 	// Initialize the library
@@ -87,12 +141,12 @@ int main(void)
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(ptrWindow);
-	 
+
 	if (!gladLoadGL()) std::cout << "ERROR::GLAD::OPEN_FAILED" << std::endl; // Glad exception
 
 	// Device info
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-	std::cout  << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+	std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 	std::cout << std::filesystem::current_path().string() << std::endl;
 	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
 
@@ -105,17 +159,16 @@ int main(void)
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
-	// Position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+	// Position points
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
 	// Color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 	// Texture position
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-
+	/*glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);*/
 
 	// Shaders read
 	std::string vertexCode;
@@ -197,7 +250,7 @@ int main(void)
 	glDeleteShader(fragmentShader);
 
 	// Texture
-	GLint txr_width, txr_height, nrChannels;
+	/*GLint txr_width, txr_height, nrChannels;
 	unsigned char* ptrData = stbi_load("res/textures/osagePlush.png", &txr_width, &txr_height, &nrChannels, 0);
 	unsigned int texture;
 	glGenTextures(1, &texture);
@@ -209,9 +262,10 @@ int main(void)
 
 	}
 	else std::cout << "FAILED::TEXTURE::LOAD" << std::endl;
-	stbi_image_free(ptrData);
+	stbi_image_free(ptrData);*/
 
 	/* Loop until the user closes the window */
+	//std::cout << points[sizeof(points) / sizeof(GLfloat) - 6];
 	while (!glfwWindowShouldClose(ptrWindow))
 	{
 		glfwPollEvents(); // Events checking
@@ -221,7 +275,7 @@ int main(void)
 		//glClearColor(1, 1, 1, -1);
 
 		glClear(GL_COLOR_BUFFER_BIT);
-	
+
 		glBindVertexArray(VAO);
 		glUseProgram(shaderProgram);
 
@@ -236,10 +290,10 @@ int main(void)
 
 		// Drawing elements
 		//glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
-		glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
-		glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
+		glPointSize(5.0f);
+		glDrawArrays(GL_POINTS, 0, pointSize / 6);
+		glLineWidth(2.0f);
+		glDrawArrays(GL_LINES, pointSize / 6, linesSize / 4);
 
 		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 	}
