@@ -13,31 +13,62 @@
 
 GLfloat vertex[]
 {
-	// positions			// colors			// texture positions
+	// positions			// colors	
 
-	// Left top square
-	-0.625f, 0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
-	-0.625f, 0.375f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
-	-0.375f, 0.625f, 0.0f,   0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
-	-0.375f, 0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
+	// Front side
+	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
 
-	// Right top square
-	0.375f, 0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
-	0.375f, 0.375f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
-	0.625f, 0.625f, 0.0f,   0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
-	0.625f, 0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
+	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
 
-	// Right bottom square
-	0.375f, -0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
-	0.375f, -0.625f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
-	0.625f, -0.375f, 0.0f,  0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
-	0.625f, -0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
+	// Back side
+	0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// right bottom angle
 
-	// Left bottom square
-	-0.625f, -0.375f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f, // left top angle
-	-0.625f, -0.625f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,// left bottom angle
-	-0.375f, -0.375f, 0.0f, 0.0f, 0.0f, 1.0f,	1.0f, 0.0f,// right top angle
-	-0.375f, -0.625f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,// right bottom angle
+	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// right bottom angle
+	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+	0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+
+	// Right side
+	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+	0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+
+	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+
+	// Left side
+	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+
+	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
+	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+
+	// Down side
+	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+
+	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
+	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+
+	// Up side
+	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+
+	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+	0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f	// left top angle
+
 };
 
 
@@ -62,59 +93,6 @@ void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int act
 
 int main(void)
 {
-	const int pointSize = 21 * 21 * 6;
-	const int linesSize = 84 * 6;
-	GLfloat positions[pointSize + linesSize];
-
-	int index = 0;
-
-	// Points
-	for (int x = -100; x <= 100; x += 10)
-	{
-		for (int y = -100; y <= 100; y += 10)
-		{
-
-			// Cordination X Y Z
-			positions[index++] = x * 0.01f;
-			positions[index++] = y * 0.01f;
-			positions[index++] = 0.0f; // Z position
-			// Color R G B
-			positions[index++] = 35.0f / 255;
-			positions[index++] = 32.0f / 255;
-			positions[index++] = 43.0f / 255;
-		}
-
-	}
-	// Lines
-	for (int offset = -100; offset <= 100; offset += 10)
-	{
-		// Absciss paralel line
-		for (int lineEnd = -1; lineEnd <= 1; lineEnd += 2)
-		{
-			// Cordination X Y Z
-			positions[index++] = lineEnd; // X position
-			positions[index++] = offset * 0.01f; // Y position
-			positions[index++] = 0.0f; // Z position
-			// Color R G B
-			positions[index++] = 35.0f / 255;
-			positions[index++] = 32.0f / 255;
-			positions[index++] = 43.0f / 255;
-
-		}
-		// Ordinate paralel line
-		for (int lineEnd = -1; lineEnd <= 1; lineEnd += 2)
-		{
-			// Cordination X Y Z
-			positions[index++] = offset * 0.01f; // X position
-			positions[index++] = lineEnd; // Y position
-			positions[index++] = 0.0f; // Z position
-			// Color R G B
-			positions[index++] = 35.0f / 255;
-			positions[index++] = 32.0f / 255;
-			positions[index++] = 43.0f / 255;
-
-		}
-	}
 	
 	GLFWwindow* ptrWindow;
 
@@ -160,7 +138,7 @@ int main(void)
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
 	// Position points
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -182,7 +160,7 @@ int main(void)
 	try
 	{
 		// Open files
-		vShaderFile.open("res/shaders/rotate_shader.vert");
+		vShaderFile.open("res/shaders/shader.vert");
 		fShaderFile.open("res/shaders/shader.frag");
 
 		std::stringstream vShaderStream, fShaderStream; // String stream
@@ -267,6 +245,9 @@ int main(void)
 
 	/* Loop until the user closes the window */
 	//std::cout << points[sizeof(points) / sizeof(GLfloat) - 6];
+
+	glEnable(GL_DEPTH_TEST);
+
 	while (!glfwWindowShouldClose(ptrWindow))
 	{
 		glfwPollEvents(); // Events checking
@@ -275,7 +256,7 @@ int main(void)
 		glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
 		//glClearColor(1, 1, 1, -1);
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glBindVertexArray(VAO);
 		glUseProgram(shaderProgram);
@@ -290,11 +271,7 @@ int main(void)
 		glUniform1f(uni_sin, (float)sin(glfwGetTime()));
 
 		// Drawing elements
-		//glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
-		glPointSize(5.0f);
-		glDrawArrays(GL_POINTS, 0, pointSize / 6);
-		glLineWidth(2.0f);
-		glDrawArrays(GL_LINES, pointSize / 6, linesSize / 4);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 	}
