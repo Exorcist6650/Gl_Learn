@@ -68,6 +68,7 @@ int main(void)
 
 	int index = 0;
 
+	// Points
 	for (int x = -100; x <= 100; x += 10)
 	{
 		for (int y = -100; y <= 100; y += 10)
@@ -78,43 +79,43 @@ int main(void)
 			positions[index++] = y * 0.01f;
 			positions[index++] = 0.0f; // Z position
 			// Color R G B
-			positions[index++] = 0.0f;
-			positions[index++] = 0.0f;
-			positions[index++] = 1.0f;
+			positions[index++] = 35.0f / 255;
+			positions[index++] = 32.0f / 255;
+			positions[index++] = 43.0f / 255;
 		}
 
 	}
-	for (int ordinate = -100; ordinate <= 100; ordinate += 10)
+	// Lines
+	for (int offset = -100; offset <= 100; offset += 10)
 	{
-		for (int len = -1; len <= 1; len += 2)
+		// Absciss paralel line
+		for (int lineEnd = -1; lineEnd <= 1; lineEnd += 2)
 		{
 			// Cordination X Y Z
-			positions[index++] = len; // X position
-			positions[index++] = ordinate * 0.01f;
+			positions[index++] = lineEnd; // X position
+			positions[index++] = offset * 0.01f; // Y position
 			positions[index++] = 0.0f; // Z position
 			// Color R G B
-			positions[index++] = 0.0f;
-			positions[index++] = 0.0f;
-			positions[index++] = 1.0f;
+			positions[index++] = 35.0f / 255;
+			positions[index++] = 32.0f / 255;
+			positions[index++] = 43.0f / 255;
 
 		}
-	}
-	for (int abscissa = -100; abscissa <= 100; abscissa += 10)
-	{
-		for (int len1 = -1; len1 <= 1; len1 += 2)
+		// Ordinate paralel line
+		for (int lineEnd = -1; lineEnd <= 1; lineEnd += 2)
 		{
 			// Cordination X Y Z
-			positions[index++] = abscissa * 0.01f; // X position
-			positions[index++] = len1;
+			positions[index++] = offset * 0.01f; // X position
+			positions[index++] = lineEnd; // Y position
 			positions[index++] = 0.0f; // Z position
 			// Color R G B
-			positions[index++] = 0.0f;
-			positions[index++] = 0.0f;
-			positions[index++] = 1.0f;
+			positions[index++] = 35.0f / 255;
+			positions[index++] = 32.0f / 255;
+			positions[index++] = 43.0f / 255;
 
 		}
 	}
-
+	
 	GLFWwindow* ptrWindow;
 
 	// Initialize the library
