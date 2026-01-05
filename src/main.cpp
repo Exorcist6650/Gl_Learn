@@ -264,14 +264,19 @@ int main(void)
 		glBindVertexArray(VAO);
 		glUseProgram(shaderProgram);
 
-		// Location configuration by screen ratio
-		GLint uni_aspectLoc = glGetUniformLocation(shaderProgram, "scrAspect");
-		glUniform1f(uni_aspectLoc, (float)SCR_ASPECT);
-		// Cos theta for moving_shaders
-		int uni_cos = glGetUniformLocation(shaderProgram, "cosTheta");
-		glUniform1f(uni_cos, (float)cos(glfwGetTime()));
-		int uni_sin = glGetUniformLocation(shaderProgram, "sinTheta");
-		glUniform1f(uni_sin, (float)sin(glfwGetTime()));
+		// Objects coords to map coords
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::rotate(model, float(glfwGetTime()) * glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+		// Map coords to camera
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		// Perspective
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
+
+		// Matrix transfer to vertex shader
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
 
 		// Drawing elements
 		glDrawArrays(GL_TRIANGLES, 0, 36);
