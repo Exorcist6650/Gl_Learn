@@ -7,11 +7,13 @@ layout (location = 2) in vec2 VertexTexturePos;
 out vec3 Color;
 out vec2 TexturePosition;
 
-uniform float scrAspect;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main()
 {
-	gl_Position = vec4(VertexPos.x * scrAspect, VertexPos.y, VertexPos.z, 1.0f);
+	gl_Position = projection * view * model * vec4(VertexPos, 1.0f);
 	Color = VertexColor;
 	TexturePosition = VertexTexturePos;
 } 
