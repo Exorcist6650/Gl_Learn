@@ -14,71 +14,58 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "resources/stb_image.h"
 
-GLfloat vertex[]
-{
-	// positions			// colors	
-
-	// Front side
-	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-
-	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
-	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-
-	// Back side
-	0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// right bottom angle
-
-	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// right bottom angle
-	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
-	0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-
-	// Right side
-	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-	0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-
-	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
-	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-
-	// Left side
-	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-
-	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
-	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-
-	// Down side
-	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-	0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-
-	0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-	-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
-	-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-
-	// Up side
-	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-	-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-
-	-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-	0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
-	0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f	// left top angle
-
-};
-
 
 GLuint SCR_WIDTH = 800;
 GLuint SCR_HEIGHT = 640;
 GLfloat SCR_ASPECT = (float)SCR_HEIGHT / (float)SCR_WIDTH;
+const float SPEED_SCALE = 4.0f;
+float gameSpeed = SPEED_SCALE;
 
+// Camera vectors
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// Mouse input
+bool firstMouse = true;
+float pitch = 0;
+float yaw = -90;
+const float MOUSE_SENSITIVILY = 0.1f;
+// Cursour start location
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+
+void glfwMouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
+{
+	float xpos = xposIn;
+	float ypos = yposIn;
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // Reversed coordinats
+	lastX = xpos;
+	lastY = ypos;
+
+	xoffset *= MOUSE_SENSITIVILY;
+	yoffset *= MOUSE_SENSITIVILY;
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
+
+	glm::vec3 tempFront;
+	tempFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	tempFront.y = sin(glm::radians(pitch));
+	tempFront.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(tempFront);
+}
 
 void glfwWindowSizeCallback(GLFWwindow* ptrWindow, GLint width, GLint height) {
 	SCR_WIDTH = width;
@@ -96,6 +83,61 @@ void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int act
 
 int main(void)
 {
+	GLfloat vertex[]
+	{
+		// positions			// colors	
+
+		// Front side
+		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+
+		// Back side
+		0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// right bottom angle
+		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+
+		// Right side
+		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+		0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+
+		// Left side
+		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
+
+		// Down side
+		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
+
+
+		// Up side
+		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
+		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
+		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
+		0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+	};
+	const GLint indecesSize = sizeof(vertex) / sizeof(GLfloat) / 4;
+	const GLint vertexPositionsAmount = sizeof(vertex) / sizeof(GLfloat) / 6;
+
+	GLuint indeces[indecesSize]{};
+	// indeces initialization
+	for (size_t i = 0, sideStep = 0; i < indecesSize && sideStep < vertexPositionsAmount; i += 6, sideStep += 4)
+	{
+		indeces[i] = 0 + sideStep;		// First triangle
+		indeces[i + 1] = 1 + sideStep;
+		indeces[i + 2] = 2 + sideStep;
+		indeces[i + 3] = 2 + sideStep;	// Second triangle
+		indeces[i + 4] = 3 + sideStep;
+		indeces[i + 5] = 0 + sideStep;
+	}
 	
 	GLFWwindow* ptrWindow;
 
@@ -118,11 +160,16 @@ int main(void)
 		return -1;
 	}
 
+	glfwSetWindowPos(ptrWindow, 150, 150); // Window start position
+	glfwMakeContextCurrent(ptrWindow); // Make the window's context current 
+	glfwFocusWindow(ptrWindow); // Focus the window as general
+
+	glfwSetInputMode(ptrWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Coursour input
+	
+	glfwSetCursorPosCallback(ptrWindow, glfwMouseCallback);
 	glfwSetWindowSizeCallback(ptrWindow, glfwWindowSizeCallback);
 	glfwSetKeyCallback(ptrWindow, glfwWindowKeyCallback);
 
-	/* Make the window's context current */
-	glfwMakeContextCurrent(ptrWindow);
 
 	if (!gladLoadGL()) std::cout << "ERROR::GLAD::OPEN_FAILED" << std::endl; // Glad exception
 
@@ -137,6 +184,10 @@ int main(void)
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
+	GLuint EBO;
+	glGenBuffers(1, &EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indeces), indeces, GL_STATIC_DRAW);
 	// Vertex buffer
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
@@ -250,14 +301,54 @@ int main(void)
 	//std::cout << points[sizeof(points) / sizeof(GLfloat) - 6];
 
 	glEnable(GL_DEPTH_TEST);
+	GLfloat lastFrame = 0;
 
 	while (!glfwWindowShouldClose(ptrWindow))
 	{
+		std::cout << gameSpeed << std::endl;
+		float currentFrame = glfwGetTime();
+		float deltaTime = currentFrame - lastFrame; // Time between frames
+		lastFrame = glfwGetTime();
+
+		const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
+
+		// Input
+		if (glfwGetKey(ptrWindow, GLFW_KEY_W) == GLFW_PRESS)
+		{
+			cameraPos += cameraFront * cameraSpeed;
+		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			cameraPos -= cameraFront * cameraSpeed;
+		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+		{
+			cameraPos += cameraUp * cameraSpeed;
+		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+		{
+			cameraPos -= cameraUp * cameraSpeed;
+		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		{
+			gameSpeed = SPEED_SCALE * 3;
+		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+		{
+			gameSpeed = SPEED_SCALE;
+		}
 		glfwPollEvents(); // Events checking
 
 		// Render here
 		glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
-		//glClearColor(1, 1, 1, -1);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -266,10 +357,9 @@ int main(void)
 
 		// Objects coords to map coords
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, float(glfwGetTime()) * glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+		model = glm::rotate(model, float(glfwGetTime()), glm::vec3(0.5f, 1.0f, 0.0f));
 		// Map coords to camera
-		glm::mat4 view = glm::mat4(1.0f);
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		// Perspective
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
 
@@ -279,7 +369,7 @@ int main(void)
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
 
 		// Drawing elements
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 	}
