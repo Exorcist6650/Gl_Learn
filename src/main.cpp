@@ -20,6 +20,7 @@ GLuint SCR_HEIGHT = 640;
 GLfloat SCR_ASPECT = (float)SCR_HEIGHT / (float)SCR_WIDTH;
 const float SPEED_SCALE = 4.0f;
 float gameSpeed = SPEED_SCALE;
+float rotationSpeed = 1.0f;
 
 // Camera vectors
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -85,47 +86,47 @@ int main(void)
 {
 	GLfloat vertex[]
 	{
-		// positions			// colors	
+		// positions			// colors			// textures (Reversed coordinates)
 
 		// Front side
-		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
+		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 0.0f,	// right top angle
+		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
+		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 1.0f,	// left bottom angle
 
 		// Back side
-		0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// right bottom angle
-		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+		0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
+		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 0.0f,	// right top angle
+		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
+		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 1.0f,	// left bottom angle
 
 		// Right side
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-		0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
+		0.5f, 0.5f,	-0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 0.0f,	// right top angle
+		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
+		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 1.0f,	// left bottom angle
 
 		// Left side
-		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
+		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
+		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 0.0f,	// right top angle
+		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
+		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	0.0f, 1.0f,	// left bottom angle
 
 		// Down side
-		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	// left bottom angle
+		-0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
+		0.5f, -0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 0.0f,	// right top angle
+		0.5f, -0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
+		-0.5f, -0.5f, -0.5f,	1.0f, 1.0f, 1.0f,	0.0f, 1.0f,	// left bottom angle
 
 
 		// Up side
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// left top angle
-		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	// right top angle
-		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// right bottom angle
-		0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	// left bottom angle
+		0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
+		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 0.0f,	// right top angle
+		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
+		0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 1.0f	// left bottom angle
 	};
-	const GLint indecesSize = sizeof(vertex) / sizeof(GLfloat) / 4;
-	const GLint vertexPositionsAmount = sizeof(vertex) / sizeof(GLfloat) / 6;
+	const GLint indecesSize = sizeof(vertex) / sizeof(GLfloat) / 8 * 1.5;
+	const GLint vertexPositionsAmount = sizeof(vertex) / sizeof(GLfloat) / 8;
 
 	GLuint indeces[indecesSize]{};
 	// indeces initialization
@@ -194,14 +195,14 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
 	// Position points
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
 	// Color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 	// Texture position
-	/*glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);*/
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
 
 	// Shaders read
 	std::string vertexCode;
@@ -283,7 +284,7 @@ int main(void)
 	glDeleteShader(fragmentShader);
 
 	// Texture
-	/*GLint txr_width, txr_height, nrChannels;
+	GLint txr_width, txr_height, nrChannels;
 	unsigned char* ptrData = stbi_load("res/textures/osagePlush.png", &txr_width, &txr_height, &nrChannels, 0);
 	unsigned int texture;
 	glGenTextures(1, &texture);
@@ -292,21 +293,18 @@ int main(void)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txr_width, txr_height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptrData);
 		glGenerateMipmap(GL_TEXTURE_2D);
-
 	}
 	else std::cout << "FAILED::TEXTURE::LOAD" << std::endl;
-	stbi_image_free(ptrData);*/
 
-	/* Loop until the user closes the window */
-	//std::cout << points[sizeof(points) / sizeof(GLfloat) - 6];
+	stbi_image_free(ptrData); // Deleting texture memory
 
+	/*Loop until the user closes the window */
 	glEnable(GL_DEPTH_TEST);
 	GLfloat lastFrame = 0;
 
 	while (!glfwWindowShouldClose(ptrWindow))
 	{
-		std::cout << gameSpeed << std::endl;
-		float currentFrame = glfwGetTime();
+		float currentFrame = glfwGetTime(); 
 		float deltaTime = currentFrame - lastFrame; // Time between frames
 		lastFrame = glfwGetTime();
 
@@ -337,14 +335,11 @@ int main(void)
 		{
 			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		{
-			gameSpeed = SPEED_SCALE * 3;
-		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-		{
-			gameSpeed = SPEED_SCALE;
-		}
+		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) gameSpeed = SPEED_SCALE * 3;
+		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) gameSpeed = SPEED_SCALE;
+		if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS) rotationSpeed += 0.001;
+		if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS) rotationSpeed -= 0.01;
+
 		glfwPollEvents(); // Events checking
 
 		// Render here
@@ -357,7 +352,7 @@ int main(void)
 
 		// Objects coords to map coords
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, float(glfwGetTime()), glm::vec3(0.5f, 1.0f, 0.0f));
+		model = glm::rotate(model, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
 		// Map coords to camera
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		// Perspective
