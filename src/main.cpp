@@ -10,6 +10,7 @@
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "resources/stb_image.h"
@@ -23,7 +24,7 @@ float gameSpeed = SPEED_SCALE;
 float rotationSpeed = 1.0f;
 
 // Camera vectors
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 1.5f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -58,8 +59,8 @@ void glfwMouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
 	yaw += xoffset;
 	pitch += yoffset;
 
-	if (pitch > 89.0f) pitch = 89.0f;
-	if (pitch < -89.0f) pitch = -89.0f;
+	//if (pitch > 89.0f) pitch = 89.0f;
+	//if (pitch < -89.0f) pitch = -89.0f;
 
 	glm::vec3 tempFront;
 	tempFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -283,20 +284,34 @@ int main(void)
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
-	// Texture
-	GLint txr_width, txr_height, nrChannels;
-	unsigned char* ptrData = stbi_load("res/textures/osagePlush.png", &txr_width, &txr_height, &nrChannels, 0);
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	if (ptrData)
+	// Textures path
+	std::vector<std::string> texturePaths
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txr_width, txr_height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptrData);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else std::cout << "FAILED::TEXTURE::LOAD" << std::endl;
+		"res/textures/osagePlush.png",
+		"res/textures/exa.png",
+		"res/textures/osageCry.png",
+		"res/textures/osageFear.png",
+		"res/textures/osagePlushCap.png",
+		"res/textures/osagePlushChristmas.png"
+	};
 
-	stbi_image_free(ptrData); // Deleting texture memory
+	std::vector <unsigned int> textures(6);
+	// Textures
+	for (size_t i = 0; i < texturePaths.size(); i++)
+	{
+		GLint txr_width, txr_height, nrChannels;
+		unsigned char* ptrData = stbi_load(texturePaths.at(i).c_str(), &txr_width, &txr_height, &nrChannels, 0);
+		glGenTextures(1, &textures.at(i));
+		glBindTexture(GL_TEXTURE_2D, textures.at(i));
+		if (ptrData)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txr_width, txr_height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptrData);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else std::cout << "FAILED::TEXTURE::LOAD" << std::endl;
+
+		stbi_image_free(ptrData); // Deleting texture memory
+	}
 
 	/*Loop until the user closes the window */
 	glEnable(GL_DEPTH_TEST);
@@ -307,6 +322,7 @@ int main(void)
 		float currentFrame = glfwGetTime(); 
 		float deltaTime = currentFrame - lastFrame; // Time between frames
 		lastFrame = glfwGetTime();
+
 
 		const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
 
@@ -337,13 +353,14 @@ int main(void)
 		}
 		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) gameSpeed = SPEED_SCALE * 3;
 		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) gameSpeed = SPEED_SCALE;
-		if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS) rotationSpeed += 0.001;
-		if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS) rotationSpeed -= 0.01;
+		if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS) rotationSpeed += 0.01;
+		//if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS) rotationSpeed -= 0.01;
 
 		glfwPollEvents(); // Events checking
 
 		// Render here
 		glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
+		//glClearColor(0, 0, 0, -1.0f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -351,20 +368,98 @@ int main(void)
 		glUseProgram(shaderProgram);
 
 		// Objects coords to map coords
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
+		glm::mat4 modelCube1 = glm::mat4(1.0f);
+		modelCube1 = glm::translate(modelCube1, glm::vec3(1.5f, 0.0f, -3.0f));
+		modelCube1 = glm::rotate(modelCube1, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
+		
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, textures.at(5));
+		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 5);
+
+
+		glm::mat4 modelCube2 = glm::mat4(1.0f);
+		modelCube2 = glm::translate(modelCube2, glm::vec3(0.0f, 0.0f, -3.0f));
+		modelCube2 = glm::rotate(modelCube2, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
+		
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, textures.at(4));
+		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 4);
+
+
+		glm::mat4 modelCube3 = glm::mat4(1.0f);
+		modelCube3 = glm::translate(modelCube3, glm::vec3(-1.5f, 0.0f, -3.0f));
+		modelCube3 = glm::rotate(modelCube3, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, textures.at(3));
+		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 3);
+
+
+		glm::mat4 modelCube4 = glm::mat4(1.0f);
+		modelCube4 = glm::translate(modelCube4, glm::vec3(-0.75f, 1.5f, -3.0f));
+		modelCube4 = glm::rotate(modelCube4, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textures.at(1));
+		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 1);
+
+
+		glm::mat4 modelCube5 = glm::mat4(1.0f);
+		modelCube5 = glm::translate(modelCube5, glm::vec3(0.75f, 1.5f, -3.0f));
+		modelCube5 = glm::rotate(modelCube5, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, textures.at(2));
+		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 2);
+
+		glm::mat4 modelCube6 = glm::mat4(1.0f);
+		modelCube6 = glm::translate(modelCube6, glm::vec3(0.0f, 3.0f, -3.0f));
+		modelCube6 = glm::rotate(modelCube6, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textures.at(0));
+		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
+
+
 		// Map coords to camera
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		// Perspective
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
 
 		// Matrix transfer to vertex shader
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
 
+		// First cube
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube1[0][0]);
 		// Drawing elements
 		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+		
+		// Second cube
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube2[0][0]);
+		// Drawing elements
+		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+		// Third cube
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube3[0][0]);
+		// Drawing elements
+		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+		
+		// Fourth cube
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube4[0][0]);
+		// Drawing elements
+		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+		// Fifth cube
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube5[0][0]);
+		// Drawing elements
+		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+		// Sixth cube
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube6[0][0]);
+		// Drawing elements
+		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
 
 		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 	}
