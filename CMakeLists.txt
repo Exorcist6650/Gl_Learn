@@ -11,6 +11,10 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME} 
 	src/main.cpp
+	src/Renderer/ShaderProgram.h
+	src/Renderer/ShaderProgram.cpp
+	src/Resources/ResourceManager.h
+	src/Resources/ResourceManager.cpp
 	src/Resources/stb_image.h)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 

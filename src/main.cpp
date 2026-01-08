@@ -4,10 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Renderer/ShaderProgram.h"
+#include "Resources/ResourceManager.h"
+
+
 #include <string>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <filesystem>
 #include <algorithm>
 #include <vector>
@@ -83,7 +85,7 @@ void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int act
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(ptrWindow, GLFW_TRUE);
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
 	GLfloat vertex[]
 	{
@@ -140,7 +142,7 @@ int main(void)
 		indeces[i + 4] = 3 + sideStep;
 		indeces[i + 5] = 0 + sideStep;
 	}
-	
+
 	GLFWwindow* ptrWindow;
 
 	// Initialize the library
@@ -167,7 +169,7 @@ int main(void)
 	glfwFocusWindow(ptrWindow); // Focus the window as general
 
 	glfwSetInputMode(ptrWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Coursour input
-	
+
 	glfwSetCursorPosCallback(ptrWindow, glfwMouseCallback);
 	glfwSetWindowSizeCallback(ptrWindow, glfwWindowSizeCallback);
 	glfwSetKeyCallback(ptrWindow, glfwWindowKeyCallback);
@@ -181,287 +183,218 @@ int main(void)
 	std::cout << std::filesystem::current_path().string() << std::endl;
 	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
 
-	// Vertex array
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	GLuint EBO;
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indeces), indeces, GL_STATIC_DRAW);
-	// Vertex buffer
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
-	// Position points
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
-	glEnableVertexAttribArray(0);
-	// Color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-	// Texture position
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-
-	// Shaders read
-	std::string vertexCode;
-	std::string fragmentCode;
-	std::ifstream vShaderFile;
-	std::ifstream fShaderFile;
-	// Exceptions
-	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	try
+	// For resourse manager memory deleting
 	{
-		// Open files
-		vShaderFile.open("res/shaders/shader.vert");
-		fShaderFile.open("res/shaders/shader.frag");
-
-		std::stringstream vShaderStream, fShaderStream; // String stream
-
-		// Read files buffers into string streams
-		vShaderStream << vShaderFile.rdbuf(); // ifstream::rdbuf() transfer all file (not getline reading)
-		fShaderStream << fShaderFile.rdbuf();
-
-		// Closing file handlers
-		vShaderFile.close();
-		fShaderFile.close();
-
-		// Stream to string convertation
-		vertexCode = vShaderStream.str(); // From thread to string
-		fragmentCode = fShaderStream.str();
-	}
-	catch (std::ifstream::failure ex)
-	{
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-	}
-	const char* vShaderCode = vertexCode.c_str(); // C str convertation for OpenGL
-	const char* fShaderCode = fragmentCode.c_str();
-
-	char infoLog[512]; // For exceptions
-	GLint success;
-
-	// Vertex shader compiling
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vShaderCode, NULL);
-	glCompileShader(vertexShader);
-	// Vertex compiling errors
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// Fragment shader compiling
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fShaderCode, NULL);
-	glCompileShader(fragmentShader);
-	// Fragment compiling errors
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPLATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// Shader program
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	// Program linking errors
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	// Shader deleting
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	// Textures path
-	std::vector<std::string> texturePaths
-	{
-		"res/textures/osagePlush.png",
-		"res/textures/exa.png",
-		"res/textures/osageCry.png",
-		"res/textures/osageFear.png",
-		"res/textures/osagePlushCap.png",
-		"res/textures/osagePlushChristmas.png"
-	};
-
-	std::vector <unsigned int> textures(6);
-	// Textures
-	for (size_t i = 0; i < texturePaths.size(); i++)
-	{
-		GLint txr_width, txr_height, nrChannels;
-		unsigned char* ptrData = stbi_load(texturePaths.at(i).c_str(), &txr_width, &txr_height, &nrChannels, 0);
-		glGenTextures(1, &textures.at(i));
-		glBindTexture(GL_TEXTURE_2D, textures.at(i));
-		if (ptrData)
+		// Resource manager enable
+		ResourceManager resourseManager(argv[0]);
+		// Shader program creating
+		std::shared_ptr<Renderer::ShaderProgram> ptrDefaultShaderProgram = 
+			resourseManager.loadShaders("DefaultShader", "res/shaders/shader.vert", "res/shaders/shader.frag");
+		if (!ptrDefaultShaderProgram)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txr_width, txr_height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptrData);
-			glGenerateMipmap(GL_TEXTURE_2D);
+			std::cerr << "ERROR::SHADER::PROGRAM::CREATION_FAILED" << std::endl;
+			return -1;
 		}
-		else std::cout << "FAILED::TEXTURE::LOAD" << std::endl;
 
-		stbi_image_free(ptrData); // Deleting texture memory
-	}
-
-	/*Loop until the user closes the window */
-	glEnable(GL_DEPTH_TEST);
-	GLfloat lastFrame = 0;
-
-	while (!glfwWindowShouldClose(ptrWindow))
-	{
-		float currentFrame = glfwGetTime(); 
-		float deltaTime = currentFrame - lastFrame; // Time between frames
-		lastFrame = glfwGetTime();
-
-
-		const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
-
-		// Input
-		if (glfwGetKey(ptrWindow, GLFW_KEY_W) == GLFW_PRESS)
-		{
-			cameraPos += cameraFront * cameraSpeed;
-		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_S) == GLFW_PRESS)
-		{
-			cameraPos -= cameraFront * cameraSpeed;
-		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
-		{
-			cameraPos += cameraUp * cameraSpeed;
-		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		{
-			cameraPos -= cameraUp * cameraSpeed;
-		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_A) == GLFW_PRESS)
-		{
-			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_D) == GLFW_PRESS)
-		{
-			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-		}
-		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) gameSpeed = SPEED_SCALE * 3;
-		if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) gameSpeed = SPEED_SCALE;
-		if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS) rotationSpeed += 0.01;
-		//if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS) rotationSpeed -= 0.01;
-
-		glfwPollEvents(); // Events checking
-
-		// Render here
-		glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
-		//glClearColor(0, 0, 0, -1.0f);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		// Vertex array
+		GLuint VAO;
+		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
-		glUseProgram(shaderProgram);
 
-		// Objects coords to map coords
-		glm::mat4 modelCube1 = glm::mat4(1.0f);
-		modelCube1 = glm::translate(modelCube1, glm::vec3(1.5f, 0.0f, -3.0f));
-		modelCube1 = glm::rotate(modelCube1, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
-		
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, textures.at(5));
-		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 5);
+		GLuint EBO;
+		glGenBuffers(1, &EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indeces), indeces, GL_STATIC_DRAW);
+		// Vertex buffer
+		GLuint VBO;
+		glGenBuffers(1, &VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+		// Position points
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
+		glEnableVertexAttribArray(0);
+		// Color
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+		// Texture position
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(2);
 
+		// Textures path
+		std::vector<std::string> texturePaths
+		{
+			"res/textures/osagePlush.png",
+			"res/textures/exa.png",
+			"res/textures/osageCry.png",
+			"res/textures/osageFear.png",
+			"res/textures/osagePlushCap.png",
+			"res/textures/osagePlushChristmas.png"
+		};
 
-		glm::mat4 modelCube2 = glm::mat4(1.0f);
-		modelCube2 = glm::translate(modelCube2, glm::vec3(0.0f, 0.0f, -3.0f));
-		modelCube2 = glm::rotate(modelCube2, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
-		
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, textures.at(4));
-		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 4);
+		std::vector <unsigned int> textures(6);
+		// Textures
+		for (size_t i = 0; i < texturePaths.size(); i++)
+		{
+			GLint txr_width, txr_height, nrChannels;
+			unsigned char* ptrData = stbi_load(texturePaths.at(i).c_str(), &txr_width, &txr_height, &nrChannels, 0);
+			glGenTextures(1, &textures.at(i));
+			glBindTexture(GL_TEXTURE_2D, textures.at(i));
+			if (ptrData)
+			{
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, txr_width, txr_height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptrData);
+				glGenerateMipmap(GL_TEXTURE_2D);
+			}
+			else std::cout << "FAILED::TEXTURE::LOAD" << std::endl;
 
+			stbi_image_free(ptrData); // Deleting texture memory
+		}
 
-		glm::mat4 modelCube3 = glm::mat4(1.0f);
-		modelCube3 = glm::translate(modelCube3, glm::vec3(-1.5f, 0.0f, -3.0f));
-		modelCube3 = glm::rotate(modelCube3, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
+		/*Loop until the user closes the window */
+		glEnable(GL_DEPTH_TEST);
+		GLfloat lastFrame = 0;
 
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, textures.at(3));
-		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 3);
-
-
-		glm::mat4 modelCube4 = glm::mat4(1.0f);
-		modelCube4 = glm::translate(modelCube4, glm::vec3(-0.75f, 1.5f, -3.0f));
-		modelCube4 = glm::rotate(modelCube4, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, textures.at(1));
-		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 1);
-
-
-		glm::mat4 modelCube5 = glm::mat4(1.0f);
-		modelCube5 = glm::translate(modelCube5, glm::vec3(0.75f, 1.5f, -3.0f));
-		modelCube5 = glm::rotate(modelCube5, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
-
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, textures.at(2));
-		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 2);
-
-		glm::mat4 modelCube6 = glm::mat4(1.0f);
-		modelCube6 = glm::translate(modelCube6, glm::vec3(0.0f, 3.0f, -3.0f));
-		modelCube6 = glm::rotate(modelCube6, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(1.0f, 0.0f, 0.0f));
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textures.at(0));
-		glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
-
-
-		// Map coords to camera
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-		// Perspective
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
-
-		// Matrix transfer to vertex shader
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-
-		// First cube
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube1[0][0]);
-		// Drawing elements
-		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
-		
-		// Second cube
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube2[0][0]);
-		// Drawing elements
-		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
-
-		// Third cube
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube3[0][0]);
-		// Drawing elements
-		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
-		
-		// Fourth cube
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube4[0][0]);
-		// Drawing elements
-		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
-
-		// Fifth cube
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube5[0][0]);
-		// Drawing elements
-		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
-
-		// Sixth cube
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube6[0][0]);
-		// Drawing elements
-		glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+		while (!glfwWindowShouldClose(ptrWindow))
+		{
+			float currentFrame = glfwGetTime();
+			float deltaTime = currentFrame - lastFrame; // Time between frames
+			lastFrame = glfwGetTime();
 
 
-		glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
+			const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
+
+			// Input
+			if (glfwGetKey(ptrWindow, GLFW_KEY_W) == GLFW_PRESS)
+			{
+				cameraPos += cameraFront * cameraSpeed;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_S) == GLFW_PRESS)
+			{
+				cameraPos -= cameraFront * cameraSpeed;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+			{
+				cameraPos += cameraUp * cameraSpeed;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+			{
+				cameraPos -= cameraUp * cameraSpeed;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_A) == GLFW_PRESS)
+			{
+				cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_D) == GLFW_PRESS)
+			{
+				cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) gameSpeed = SPEED_SCALE * 3;
+			if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) gameSpeed = SPEED_SCALE;
+			if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS) rotationSpeed += 0.01;
+			//if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS) rotationSpeed -= 0.01;
+
+			glfwPollEvents(); // Events checking
+
+			// Render here
+			glClearColor(96.0f / 255.0f, 69.0f / 255.0f, 107.0f / 255.0f, -1.0f);
+			//glClearColor(0, 0, 0, -1.0f);
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			glBindVertexArray(VAO);
+			ptrDefaultShaderProgram->use(); // Using shader program
+
+			// Objects coords to map coords
+			glm::mat4 modelCube1 = glm::mat4(1.0f);
+			modelCube1 = glm::translate(modelCube1, glm::vec3(1.5f, 0.0f, -3.0f));
+			modelCube1 = glm::rotate(modelCube1, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
+
+			glm::mat4 modelCube2 = glm::mat4(1.0f);
+			modelCube2 = glm::translate(modelCube2, glm::vec3(0.0f, 0.0f, -3.0f));
+			modelCube2 = glm::rotate(modelCube2, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
+
+			glm::mat4 modelCube3 = glm::mat4(1.0f);
+			modelCube3 = glm::translate(modelCube3, glm::vec3(-1.5f, 0.0f, -3.0f));
+			modelCube3 = glm::rotate(modelCube3, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
+
+			glm::mat4 modelCube4 = glm::mat4(1.0f);
+			modelCube4 = glm::translate(modelCube4, glm::vec3(-0.75f, 1.5f, -3.0f));
+			modelCube4 = glm::rotate(modelCube4, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
+
+			glm::mat4 modelCube5 = glm::mat4(1.0f);
+			modelCube5 = glm::translate(modelCube5, glm::vec3(0.75f, 1.5f, -3.0f));
+			modelCube5 = glm::rotate(modelCube5, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
+
+			glm::mat4 modelCube6 = glm::mat4(1.0f);
+			modelCube6 = glm::translate(modelCube6, glm::vec3(0.0f, 3.0f, -3.0f));
+			modelCube6 = glm::rotate(modelCube6, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(1.0f, 0.0f, 0.0f));
+
+
+			// Map coords to camera
+			glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+			// Perspective
+			glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
+
+			// Matrix transfer to vertex shader
+			glUniformMatrix4fv(glGetUniformLocation(&ptrDefaultShaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+
+			// First cube
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube1[0][0]);
+			// Texture
+			glActiveTexture(GL_TEXTURE5);
+			glBindTexture(GL_TEXTURE_2D, textures.at(5));
+			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 5);
+			// Drawing elements
+			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+			// Second cube
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube2[0][0]);
+			// Texture
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, textures.at(4));
+			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 4);
+			// Drawing elements
+			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+			// Third cube
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube3[0][0]);
+			// Texture
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, textures.at(3));
+			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 3);
+			// Drawing elements
+			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+			// Fourth cube
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube4[0][0]);
+			// Texture
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, textures.at(1));
+			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 1);
+			// Drawing elements
+			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+			// Fifth cube
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube5[0][0]);
+			// Texture
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, textures.at(2));
+			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 2);
+			// Drawing elements
+			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+			// Sixth cube
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube6[0][0]);
+			// Texture
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, textures.at(0));
+			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
+			// Drawing elements
+			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+
+			glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
+		}
 	}
 
 	glDeleteBuffers(1, &VAO);
