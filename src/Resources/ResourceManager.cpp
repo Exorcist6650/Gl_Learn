@@ -38,11 +38,22 @@ std::shared_ptr<Renderer::ShaderProgram> ResourceManager::loadShaders(const std:
 	return nullptr;
 }
 
+std::shared_ptr<Renderer::ShaderProgram> ResourceManager::getShaderProgram(const std::string& shaderProgramName)
+{
+	auto it = shader_programs.find(shaderProgramName);
+	if (it != shader_programs.end()) return it->second;
+
+	// Error output
+	std::cout << "ERROR::RESOURSE_MANAGER::GET_SHADER_PROGRAM" << std::endl;
+	return nullptr;
+}
+
+
 std::string ResourceManager::getFileString(const std::string& relativeFilePath) const
 {
 	// File open and stream into string
 	std::ifstream shaderFile;
-	shaderFile.open(b_path + relativeFilePath.c_str(), std::ios::in, std::ios::binary);
+	shaderFile.open(b_path + "/" + relativeFilePath.c_str(), std::ios::in, std::ios::binary);
 	if (!shaderFile.is_open())
 	{
 		std::cerr << "ERROR::SHADER::FILE_NOT_OPEN\n" << relativeFilePath << std::endl;

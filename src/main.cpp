@@ -335,60 +335,60 @@ int main(int argc, char** argv)
 			glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
 
 			// Matrix transfer to vertex shader
-			glUniformMatrix4fv(glGetUniformLocation(&ptrDefaultShaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "view"), 1, GL_FALSE, &view[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "projection"), 1, GL_FALSE, &projection[0][0]);
 
 			// First cube
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube1[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube1[0][0]);
 			// Texture
 			glActiveTexture(GL_TEXTURE5);
 			glBindTexture(GL_TEXTURE_2D, textures.at(5));
-			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 5);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 5);
 			// Drawing elements
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
 			// Second cube
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube2[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube2[0][0]);
 			// Texture
 			glActiveTexture(GL_TEXTURE4);
 			glBindTexture(GL_TEXTURE_2D, textures.at(4));
-			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 4);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 4);
 			// Drawing elements
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
 			// Third cube
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube3[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube3[0][0]);
 			// Texture
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, textures.at(3));
-			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 3);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 3);
 			// Drawing elements
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
 			// Fourth cube
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube4[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube4[0][0]);
 			// Texture
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, textures.at(1));
-			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 1);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 1);
 			// Drawing elements
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
 			// Fifth cube
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube5[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube5[0][0]);
 			// Texture
 			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, textures.at(2));
-			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 2);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 2);
 			// Drawing elements
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
 			// Sixth cube
-			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelCube6[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube6[0][0]);
 			// Texture
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, textures.at(0));
-			glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 0);
 			// Drawing elements
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
@@ -396,8 +396,6 @@ int main(int argc, char** argv)
 			glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 		}
 	}
-
-	glDeleteBuffers(1, &VAO);
 	glfwTerminate();
 	return 0;
 }

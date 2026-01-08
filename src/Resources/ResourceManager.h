@@ -17,6 +17,8 @@ public:
 	std::shared_ptr <Renderer::ShaderProgram> loadShaders(const std::string shaderProgramName, 
 		const std::string& vertexPath, const std::string& fragmentPath);
 
+	std::shared_ptr<Renderer::ShaderProgram> getShaderProgram(const std::string& shaderProgramName);
+
 	ResourceManager(const ResourceManager&) = delete;
 	ResourceManager& operator=(const ResourceManager&) = delete;
 private:

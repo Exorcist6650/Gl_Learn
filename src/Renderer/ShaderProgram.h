@@ -12,6 +12,7 @@ namespace Renderer {
 		~ShaderProgram();
 		bool isCompiled() const { return program_is_compiled; }
 		void use() const;
+		GLuint getProgramID() const { return program_ID; }
 
 		ShaderProgram() = delete;
 		ShaderProgram(const ShaderProgram&) = delete;
