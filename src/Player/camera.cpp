@@ -38,3 +38,35 @@ void Camera::input(GLFWwindow* ptrWindow, GLfloat deltaTime)
 	if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed_scale = MOVING_SPEED * 3.0f;
 	if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) speed_scale = MOVING_SPEED;
 }
+
+void Camera::MouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
+{
+	float xpos = xposIn;
+	float ypos = yposIn;
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // Reversed coordinats
+	lastX = xpos;
+	lastY = ypos;
+
+	xoffset *= MOUSE_SENSITIVILY;
+	yoffset *= MOUSE_SENSITIVILY;
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
+
+	glm::vec3 tempFront;
+	tempFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	tempFront.y = sin(glm::radians(pitch));
+	tempFront.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	setFront(glm::normalize(tempFront));
+}

@@ -7,6 +7,7 @@
 #include "Renderer/ShaderProgram.h"
 #include "Resources/ResourceManager.h"
 #include "Player/camera.h"
+#include "CoreTypes.h"
 
 
 #include <string>
@@ -18,67 +19,22 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "resources/stb_image.h"
 
+WindowState winState(800, 640);
 
-GLuint SCR_WIDTH = 800;
-GLuint SCR_HEIGHT = 640;
-GLfloat SCR_ASPECT = (float)SCR_HEIGHT / (float)SCR_WIDTH;
-const float SPEED_SCALE = 4.0f;
-float gameSpeed = SPEED_SCALE;
-float rotationSpeed = 1.0f;
+Camera playerCam(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), &winState);
 
-// Camera vectors
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.5f, 0.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-// Mouse input
-bool firstMouse = true;
-float pitch = 0;
-float yaw = -90;
-const float MOUSE_SENSITIVILY = 0.1f;
-// Cursour start location
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-
-void MouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
+void glfwMouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
 {
-	float xpos = xposIn;
-	float ypos = yposIn;
-
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // Reversed coordinats
-	lastX = xpos;
-	lastY = ypos;
-
-	xoffset *= MOUSE_SENSITIVILY;
-	yoffset *= MOUSE_SENSITIVILY;
-	yaw += xoffset;
-	pitch += yoffset;
-
-	if (pitch > 89.0f) pitch = 89.0f;
-	if (pitch < -89.0f) pitch = -89.0f;
-
-	glm::vec3 tempFront;
-	tempFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	tempFront.y = sin(glm::radians(pitch));
-	tempFront.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(tempFront);
+	playerCam.MouseCallback(ptrWindow, xposIn, yposIn);
 }
 
 void glfwWindowSizeCallback(GLFWwindow* ptrWindow, GLint width, GLint height) {
-	SCR_WIDTH = width;
-	SCR_HEIGHT = height;
-	SCR_ASPECT = (float)SCR_HEIGHT / (float)SCR_WIDTH;
+	winState.SCR_WIDTH = width;
+	winState.SCR_HEIGHT = height;
+	winState.SCR_ASPECT = (float)winState.SCR_HEIGHT / (float)winState.SCR_WIDTH;
 
-	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
+	glViewport(0, 0, winState.SCR_WIDTH, winState.SCR_HEIGHT);
+	//std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
 }
 
 void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int action, int mode)
@@ -166,7 +122,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	/* Create a windowed mode window and its OpenGL context */
-	ptrWindow = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Square", NULL, NULL);
+	ptrWindow = glfwCreateWindow(winState.SCR_WIDTH, winState.SCR_HEIGHT, "OsageEngine", NULL, NULL);
 	if (!ptrWindow)
 	{
 		glfwTerminate();
@@ -179,7 +135,7 @@ int main(int argc, char** argv)
 
 	glfwSetInputMode(ptrWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Coursour input
 
-	glfwSetCursorPosCallback(ptrWindow, MouseCallback);
+	glfwSetCursorPosCallback(ptrWindow, glfwMouseCallback);
 	glfwSetWindowSizeCallback(ptrWindow, glfwWindowSizeCallback);
 	glfwSetKeyCallback(ptrWindow, glfwWindowKeyCallback);
 
@@ -190,16 +146,15 @@ int main(int argc, char** argv)
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 	std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 	std::cout << std::filesystem::current_path().string() << std::endl;
-	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
-	
-	Camera playerCam(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
+
 
 	// For resourse manager smart pointer deleting
 	{
 		// Resource manager enable
 		ResourceManager resourseManager(argv[0]);
 		// Shader program creating
-		std::shared_ptr<Renderer::ShaderProgram> ptrDefaultShaderProgram = 
+		std::shared_ptr<Renderer::ShaderProgram> ptrDefaultShaderProgram =
 			resourseManager.loadShaders("DefaultShader", "res/shaders/shader.vert", "res/shaders/shader.frag");
 		if (!ptrDefaultShaderProgram)
 		{
@@ -230,7 +185,7 @@ int main(int argc, char** argv)
 		// Texture position
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(2);
-		
+
 		// Vertex platform array
 		GLuint VAO_platform;
 		glGenVertexArrays(1, &VAO_platform);
@@ -250,7 +205,7 @@ int main(int argc, char** argv)
 		// Texture position
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void*)(6 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(2);
-		
+
 		// Textures path
 		std::vector<std::string> texturePaths
 		{
@@ -286,8 +241,7 @@ int main(int argc, char** argv)
 			float deltaTime = currentFrame - lastFrame; // Time between frames
 			lastFrame = glfwGetTime();
 
-
-			const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
+			//const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
 
 			// Input
 			playerCam.input(ptrWindow, deltaTime);
@@ -299,7 +253,7 @@ int main(int argc, char** argv)
 			//glClearColor(0, 0, 0, -1.0f);
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			
+
 			// Cube array
 			glBindVertexArray(VAO);
 			ptrDefaultShaderProgram->use(); // Using shader program
@@ -312,7 +266,7 @@ int main(int argc, char** argv)
 			// Map coords to camera
 			glm::mat4 view = glm::lookAt(playerCam.getPos(), playerCam.getPos() + playerCam.getFront(), playerCam.getUp());
 			// Perspective
-			glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
+			glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(winState.SCR_ASPECT, -1), 0.1f, 100.0f);
 
 			// Matrix transfer to vertex shader
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "view"), 1, GL_FALSE, &view[0][0]);
@@ -322,7 +276,7 @@ int main(int argc, char** argv)
 			// Texture
 			glBindTexture(GL_TEXTURE_2D, textures.at(0));
 			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 0);
-			
+
 			// Drawing elements cube
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
@@ -330,7 +284,7 @@ int main(int argc, char** argv)
 			glBindVertexArray(VAO_platform);
 
 			glm::mat4 modelPlatform = glm::mat4(1.0f);
-			modelPlatform = glm::scale(modelPlatform, glm::vec3(50.0f, 1.0f, 50.0f));
+			modelPlatform = glm::scale(modelPlatform, glm::vec3(15.0f, 1.0f, 10.0f));
 			modelPlatform = glm::translate(modelPlatform, glm::vec3(0.0f, 0.0f, 0.0f));
 
 			// New model transfer to vertex shader
@@ -340,11 +294,9 @@ int main(int argc, char** argv)
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, textures.at(1));
 			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 1);
-			
+
 			// Platform drawing
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-			
 
 			glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 		}
