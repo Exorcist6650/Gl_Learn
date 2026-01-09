@@ -19,6 +19,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "resources/stb_image.h"
 
+// State of window
 WindowState winState(800, 640);
 
 Camera playerCam(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), &winState);
@@ -34,7 +35,6 @@ void glfwWindowSizeCallback(GLFWwindow* ptrWindow, GLint width, GLint height) {
 	winState.SCR_ASPECT = (float)winState.SCR_HEIGHT / (float)winState.SCR_WIDTH;
 
 	glViewport(0, 0, winState.SCR_WIDTH, winState.SCR_HEIGHT);
-	//std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
 }
 
 void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int action, int mode)
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 
 	GLFWwindow* ptrWindow;
 
-	// Initialize the library
+	// Initialize glfw
 	if (!glfwInit())
 	{
 		std::cout << "ERROR::GLFW::INIT_FAILED" << std::endl;
@@ -121,6 +121,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	/* Create a windowed mode window and its OpenGL context */
 	ptrWindow = glfwCreateWindow(winState.SCR_WIDTH, winState.SCR_HEIGHT, "OsageEngine", NULL, NULL);
 	if (!ptrWindow)
@@ -210,7 +211,7 @@ int main(int argc, char** argv)
 		std::vector<std::string> texturePaths
 		{
 			"res/textures/osagePlush.png",
-			"res/textures/black-stones-tiled-floor.png"
+			"res/textures/floor_texture.png"
 		};
 
 		std::vector <unsigned int> textures(6);
@@ -284,8 +285,8 @@ int main(int argc, char** argv)
 			glBindVertexArray(VAO_platform);
 
 			glm::mat4 modelPlatform = glm::mat4(1.0f);
-			modelPlatform = glm::scale(modelPlatform, glm::vec3(15.0f, 1.0f, 10.0f));
-			modelPlatform = glm::translate(modelPlatform, glm::vec3(0.0f, 0.0f, 0.0f));
+			modelPlatform = glm::translate(modelPlatform, glm::vec3(0.0f, 0.0f, -3.0f));
+			modelPlatform = glm::scale(modelPlatform, glm::vec3(5.0f, 1.0f, 5.0f));
 
 			// New model transfer to vertex shader
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelPlatform[0][0]);
