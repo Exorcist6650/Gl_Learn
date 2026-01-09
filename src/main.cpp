@@ -6,6 +6,7 @@
 
 #include "Renderer/ShaderProgram.h"
 #include "Resources/ResourceManager.h"
+#include "Player/camera.h"
 
 
 #include <string>
@@ -26,7 +27,7 @@ float gameSpeed = SPEED_SCALE;
 float rotationSpeed = 1.0f;
 
 // Camera vectors
-glm::vec3 cameraPos = glm::vec3(0.0f, 1.5f, 3.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.5f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -39,7 +40,7 @@ const float MOUSE_SENSITIVILY = 0.1f;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-void glfwMouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
+void MouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
 {
 	float xpos = xposIn;
 	float ypos = yposIn;
@@ -61,8 +62,8 @@ void glfwMouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
 	yaw += xoffset;
 	pitch += yoffset;
 
-	//if (pitch > 89.0f) pitch = 89.0f;
-	//if (pitch < -89.0f) pitch = -89.0f;
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
 
 	glm::vec3 tempFront;
 	tempFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -87,9 +88,9 @@ void glfwWindowKeyCallback(GLFWwindow* ptrWindow, int key, int scancode, int act
 
 int main(int argc, char** argv)
 {
-	GLfloat vertex[]
+	GLfloat vertexCube[]
 	{
-		// positions			// colors			// textures (Reversed coordinates)
+		// positions			// colors			// textures (reversed coordinates)
 
 		// Front side
 		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
@@ -128,8 +129,8 @@ int main(int argc, char** argv)
 		-0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
 		0.5f, 0.5f, -0.5f,		1.0f, 1.0f, 1.0f,	0.0f, 1.0f	// left bottom angle
 	};
-	const GLint indecesSize = sizeof(vertex) / sizeof(GLfloat) / 8 * 1.5;
-	const GLint vertexPositionsAmount = sizeof(vertex) / sizeof(GLfloat) / 8;
+	const GLint indecesSize = sizeof(vertexCube) / sizeof(GLfloat) / 8 * 1.5;
+	const GLint vertexPositionsAmount = sizeof(vertexCube) / sizeof(GLfloat) / 8;
 
 	GLuint indeces[indecesSize]{};
 	// indeces initialization
@@ -142,6 +143,14 @@ int main(int argc, char** argv)
 		indeces[i + 4] = 3 + sideStep;
 		indeces[i + 5] = 0 + sideStep;
 	}
+	GLfloat vertexPlatform[]
+	{
+		// positons				// colors			// texture (reversed coordinates)
+		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f,	1.0f, 0.0f,	// right top angle
+		-1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f,	0.0f, 0.0f,	// left top angle
+		1.0f, 0.0f, -1.0f,		1.0f, 1.0f, 1.0f,	1.0f, 1.0f,	// right bottom angle
+		-1.0f, 0.0f, -1.0f,		1.0f, 1.0f, 1.0f,	0.0f, 1.0f,	// left bottom angle	
+	};
 
 	GLFWwindow* ptrWindow;
 
@@ -170,7 +179,7 @@ int main(int argc, char** argv)
 
 	glfwSetInputMode(ptrWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Coursour input
 
-	glfwSetCursorPosCallback(ptrWindow, glfwMouseCallback);
+	glfwSetCursorPosCallback(ptrWindow, MouseCallback);
 	glfwSetWindowSizeCallback(ptrWindow, glfwWindowSizeCallback);
 	glfwSetKeyCallback(ptrWindow, glfwWindowKeyCallback);
 
@@ -182,8 +191,10 @@ int main(int argc, char** argv)
 	std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 	std::cout << std::filesystem::current_path().string() << std::endl;
 	std::cout << "SCR_WIDTH: " << SCR_WIDTH << "px\n" << "SCR_HEIGHT: " << SCR_HEIGHT << "px\n" << "SCR_ASPECT: " << SCR_ASPECT << std::endl;
+	
+	Camera playerCam(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	// For resourse manager memory deleting
+	// For resourse manager smart pointer deleting
 	{
 		// Resource manager enable
 		ResourceManager resourseManager(argv[0]);
@@ -196,7 +207,7 @@ int main(int argc, char** argv)
 			return -1;
 		}
 
-		// Vertex array
+		// Vertex cube array
 		GLuint VAO;
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
@@ -209,7 +220,7 @@ int main(int argc, char** argv)
 		GLuint VBO;
 		glGenBuffers(1, &VBO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCube), vertexCube, GL_STATIC_DRAW);
 		// Position points
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
 		glEnableVertexAttribArray(0);
@@ -219,16 +230,32 @@ int main(int argc, char** argv)
 		// Texture position
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(2);
+		
+		// Vertex platform array
+		GLuint VAO_platform;
+		glGenVertexArrays(1, &VAO_platform);
+		glBindVertexArray(VAO_platform);
 
+		// Vertex buffer
+		GLuint VBO_platform;
+		glGenBuffers(1, &VBO_platform);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_platform);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPlatform), vertexPlatform, GL_STATIC_DRAW);
+		// Positions points
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void*)0);
+		glEnableVertexAttribArray(0);
+		// Color
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+		// Texture position
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void*)(6 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(2);
+		
 		// Textures path
 		std::vector<std::string> texturePaths
 		{
 			"res/textures/osagePlush.png",
-			"res/textures/exa.png",
-			"res/textures/osageCry.png",
-			"res/textures/osageFear.png",
-			"res/textures/osagePlushCap.png",
-			"res/textures/osagePlushChristmas.png"
+			"res/textures/black-stones-tiled-floor.png"
 		};
 
 		std::vector <unsigned int> textures(6);
@@ -263,34 +290,7 @@ int main(int argc, char** argv)
 			const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
 
 			// Input
-			if (glfwGetKey(ptrWindow, GLFW_KEY_W) == GLFW_PRESS)
-			{
-				cameraPos += cameraFront * cameraSpeed;
-			}
-			if (glfwGetKey(ptrWindow, GLFW_KEY_S) == GLFW_PRESS)
-			{
-				cameraPos -= cameraFront * cameraSpeed;
-			}
-			if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
-			{
-				cameraPos += cameraUp * cameraSpeed;
-			}
-			if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-			{
-				cameraPos -= cameraUp * cameraSpeed;
-			}
-			if (glfwGetKey(ptrWindow, GLFW_KEY_A) == GLFW_PRESS)
-			{
-				cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-			}
-			if (glfwGetKey(ptrWindow, GLFW_KEY_D) == GLFW_PRESS)
-			{
-				cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-			}
-			if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) gameSpeed = SPEED_SCALE * 3;
-			if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) gameSpeed = SPEED_SCALE;
-			if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS) rotationSpeed += 0.01;
-			//if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS) rotationSpeed -= 0.01;
+			playerCam.input(ptrWindow, deltaTime);
 
 			glfwPollEvents(); // Events checking
 
@@ -299,99 +299,52 @@ int main(int argc, char** argv)
 			//glClearColor(0, 0, 0, -1.0f);
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+			
+			// Cube array
 			glBindVertexArray(VAO);
 			ptrDefaultShaderProgram->use(); // Using shader program
 
 			// Objects coords to map coords
-			glm::mat4 modelCube1 = glm::mat4(1.0f);
-			modelCube1 = glm::translate(modelCube1, glm::vec3(1.5f, 0.0f, -3.0f));
-			modelCube1 = glm::rotate(modelCube1, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
-
-			glm::mat4 modelCube2 = glm::mat4(1.0f);
-			modelCube2 = glm::translate(modelCube2, glm::vec3(0.0f, 0.0f, -3.0f));
-			modelCube2 = glm::rotate(modelCube2, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
-
-			glm::mat4 modelCube3 = glm::mat4(1.0f);
-			modelCube3 = glm::translate(modelCube3, glm::vec3(-1.5f, 0.0f, -3.0f));
-			modelCube3 = glm::rotate(modelCube3, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
-
-			glm::mat4 modelCube4 = glm::mat4(1.0f);
-			modelCube4 = glm::translate(modelCube4, glm::vec3(-0.75f, 1.5f, -3.0f));
-			modelCube4 = glm::rotate(modelCube4, float(glfwGetTime()) * glm::radians(-45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
-
-			glm::mat4 modelCube5 = glm::mat4(1.0f);
-			modelCube5 = glm::translate(modelCube5, glm::vec3(0.75f, 1.5f, -3.0f));
-			modelCube5 = glm::rotate(modelCube5, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(-0.5f, 1.0f, 0.0f));
-
-			glm::mat4 modelCube6 = glm::mat4(1.0f);
-			modelCube6 = glm::translate(modelCube6, glm::vec3(0.0f, 3.0f, -3.0f));
-			modelCube6 = glm::rotate(modelCube6, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(1.0f, 0.0f, 0.0f));
-
+			glm::mat4 modelCube = glm::mat4(1.0f);
+			modelCube = glm::translate(modelCube, glm::vec3(0.0f, 0.5f, -3.0f));
+			//modelCube = glm::rotate(modelCube, float(glfwGetTime()) * glm::radians(45.0f) * rotationSpeed, glm::vec3(0.5f, 1.0f, 0.0f));
 
 			// Map coords to camera
-			glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+			glm::mat4 view = glm::lookAt(playerCam.getPos(), playerCam.getPos() + playerCam.getFront(), playerCam.getUp());
 			// Perspective
 			glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(SCR_ASPECT, -1), 0.1f, 100.0f);
 
 			// Matrix transfer to vertex shader
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "view"), 1, GL_FALSE, &view[0][0]);
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "projection"), 1, GL_FALSE, &projection[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube[0][0]);
 
-			// First cube
-			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube1[0][0]);
 			// Texture
-			glActiveTexture(GL_TEXTURE5);
-			glBindTexture(GL_TEXTURE_2D, textures.at(5));
-			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 5);
-			// Drawing elements
+			glBindTexture(GL_TEXTURE_2D, textures.at(0));
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 0);
+			
+			// Drawing elements cube
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
-			// Second cube
-			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube2[0][0]);
-			// Texture
-			glActiveTexture(GL_TEXTURE4);
-			glBindTexture(GL_TEXTURE_2D, textures.at(4));
-			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 4);
-			// Drawing elements
-			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+			// Platform array
+			glBindVertexArray(VAO_platform);
 
-			// Third cube
-			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube3[0][0]);
-			// Texture
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, textures.at(3));
-			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 3);
-			// Drawing elements
-			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+			glm::mat4 modelPlatform = glm::mat4(1.0f);
+			modelPlatform = glm::scale(modelPlatform, glm::vec3(50.0f, 1.0f, 50.0f));
+			modelPlatform = glm::translate(modelPlatform, glm::vec3(0.0f, 0.0f, 0.0f));
 
-			// Fourth cube
-			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube4[0][0]);
+			// New model transfer to vertex shader
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelPlatform[0][0]);
+
 			// Texture
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, textures.at(1));
 			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 1);
-			// Drawing elements
-			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+			
+			// Platform drawing
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-			// Fifth cube
-			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube5[0][0]);
-			// Texture
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, textures.at(2));
-			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 2);
-			// Drawing elements
-			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
-
-			// Sixth cube
-			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube6[0][0]);
-			// Texture
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textures.at(0));
-			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 0);
-			// Drawing elements
-			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
-
+			
 
 			glfwSwapBuffers(ptrWindow); // Swap front and back buffers 
 		}

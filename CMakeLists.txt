@@ -15,6 +15,8 @@ add_executable(${PROJECT_NAME}
 	src/Renderer/ShaderProgram.cpp
 	src/Resources/ResourceManager.h
 	src/Resources/ResourceManager.cpp
+	src/Player/camera.h
+	src/Player/camera.cpp
 	src/Resources/stb_image.h)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 
