@@ -22,7 +22,7 @@
 // State of window
 WindowState winState(800, 640);
 
-Camera playerCam(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), &winState);
+Camera playerCam(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), &winState, 6.0f);
 
 void glfwMouseCallback(GLFWwindow* ptrWindow, double xposIn, double yposIn)
 {
@@ -236,13 +236,41 @@ int main(int argc, char** argv)
 		glEnable(GL_DEPTH_TEST);
 		GLfloat lastFrame = 0;
 
+		float lightCubeX = 5.0f;
+		float lightCubeY = 5.0f;
+		float lightCubeZ = -3.0f;
+
 		while (!glfwWindowShouldClose(ptrWindow))
 		{
 			float currentFrame = glfwGetTime();
 			float deltaTime = currentFrame - lastFrame; // Time between frames
 			lastFrame = glfwGetTime();
 
-			//const float cameraSpeed = gameSpeed * deltaTime; // Moving speed
+
+			if (glfwGetKey(ptrWindow, GLFW_KEY_UP) == GLFW_PRESS)
+			{
+				lightCubeZ -= 0.01f;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_DOWN) == GLFW_PRESS)
+			{
+				lightCubeZ += 0.01f;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
+			{
+				lightCubeX -= 0.01f;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			{
+				lightCubeX += 0.01f;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+			{
+				lightCubeY += 0.01f;
+			}
+			if (glfwGetKey(ptrWindow, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+			{
+				lightCubeY -= 0.01f;
+			}
 
 			// Input
 			playerCam.input(ptrWindow, deltaTime);
@@ -267,18 +295,32 @@ int main(int argc, char** argv)
 			// Map coords to camera
 			glm::mat4 view = glm::lookAt(playerCam.getPos(), playerCam.getPos() + playerCam.getFront(), playerCam.getUp());
 			// Perspective
-			glm::mat4 projection = glm::perspective(glm::radians(45.0f), powf(winState.SCR_ASPECT, -1), 0.1f, 100.0f);
+			glm::mat4 projection = glm::perspective(glm::radians(90.0f), powf(winState.SCR_ASPECT, -1), 0.1f, 100.0f);
 
 			// Matrix transfer to vertex shader
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "view"), 1, GL_FALSE, &view[0][0]);
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "projection"), 1, GL_FALSE, &projection[0][0]);
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelCube[0][0]);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "useTexture"), false);
 
 			// Texture
+			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, textures.at(0));
 			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "textureSampler"), 0);
 
 			// Drawing elements cube
+			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
+
+			// Light cude 
+			glm::mat4 modelLightCube = glm::mat4(1.0f);
+			modelLightCube = glm::translate(modelLightCube, glm::vec3(lightCubeX, lightCubeY, lightCubeZ));
+			modelLightCube = glm::scale(modelLightCube, glm::vec3(0.5f, 0.5f, 0.5f));
+
+			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelLightCube[0][0]);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "useTexture"), true);
+			
+			glBindTexture(GL_TEXTURE_2D, 0); // No texture
+
 			glDrawElements(GL_TRIANGLES, sizeof(indeces), GL_UNSIGNED_INT, 0);
 
 			// Platform array
@@ -290,6 +332,7 @@ int main(int argc, char** argv)
 
 			// New model transfer to vertex shader
 			glUniformMatrix4fv(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "model"), 1, GL_FALSE, &modelPlatform[0][0]);
+			glUniform1i(glGetUniformLocation(resourseManager.getShaderProgram("DefaultShader")->getProgramID(), "useTexture"), false);
 
 			// Texture
 			glActiveTexture(GL_TEXTURE1);
